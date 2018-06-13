@@ -1,9 +1,11 @@
 package com.example.home_zhang.cpms;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -28,7 +30,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -43,7 +47,7 @@ public class MainActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
 
         SearchView searchView = (SearchView) findViewById(R.id.searchProblemView);
-        searchView.setQueryHint("Search Here");
+        searchView.setQueryHint("Search here");
         searchView.setQueryRefinementEnabled(true);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -86,7 +90,8 @@ public class MainActivity extends AppCompatActivity
                 for (int i = 0; i < data.size(); i++) {
                     final String text = data.get(i).getTitle().toLowerCase();
                     final String number = data.get(i).getNo();
-                    if (text.contains(newText) || number.contains(newText)) {
+                    final String difficulty = data.get(i).getDifficultyLevel().toLowerCase();
+                    if (text.contains(newText) || number.contains(newText) || difficulty.contains(newText)) {
                         filteredList.add(data.get(i));
                     }
                 }
@@ -95,6 +100,19 @@ public class MainActivity extends AppCompatActivity
                 return true;
             }
         });
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+        String exampleText = prefs.getString("example_list", "");
+
+        Set<String> exampleTexts = prefs.getStringSet("show_levels", new HashSet<String>());
+
+        SearchView searchView = (SearchView) findViewById(R.id.searchProblemView);
+        searchView.setQueryHint(exampleTexts.toString());
     }
 
     private void fillProblemList(RecyclerView recyclerView) {
