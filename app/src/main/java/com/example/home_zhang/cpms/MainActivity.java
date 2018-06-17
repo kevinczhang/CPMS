@@ -122,17 +122,17 @@ public class MainActivity extends AppCompatActivity
             db.openDataBase();
 
             SQLiteDatabase sd = db.getReadableDatabase();
-            Cursor cursor = sd.query("Problems", null, null, null, null, null, null, null);
-            int numberCol = cursor.getColumnIndex("NUMBER");
-            int titleCol = cursor.getColumnIndex("TITLE");
-            int difficultyCol = cursor.getColumnIndex("DIFFICULTY");
-            int tagsCol = cursor.getColumnIndex("TAGS");
-            int companiesCol = cursor.getColumnIndex("COMPANIES");
-            int specialtagsCol = cursor.getColumnIndex("SPECIALTAGS");
+            Cursor cursor = sd.query("questions",
+                    new String[]{"id", "source_number", "title", "level", "topics"},
+                    null, null, null, null, null, null);
+
             while (cursor.moveToNext()) {
-                this.data.add(new Problem(cursor.getString(numberCol), cursor.getString(titleCol),
-                        cursor.getString(difficultyCol), cursor.getString(tagsCol),
-                        cursor.getString(companiesCol), cursor.getString(specialtagsCol)));
+                String id = cursor.getString(0);
+                int number = cursor.getInt(1);
+                String title = cursor.getString(2);
+                String level = cursor.getString(3);
+                String topics = cursor.getString(4);
+                this.data.add(new Problem(String.valueOf(number), title, level, topics));
             }
             Collections.sort(this.data, new Comparator<Problem>() {
                 @Override

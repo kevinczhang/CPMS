@@ -19,7 +19,9 @@ import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Animation;
 import android.view.animation.Transformation;
+import android.webkit.WebChromeClient;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.TextView;
 
 import com.example.home_zhang.cpms.DAL.DatabaseHelper;
@@ -49,11 +51,16 @@ public class ProblemDescriptionActivity extends AppCompatActivity {
             db.openDataBase();
 
             SQLiteDatabase sd = db.getReadableDatabase();
-            Cursor cursor = sd.rawQuery("Select TITLE, DESCRIPTION, SOLUTION from Problems where NUMBER = " + value, null);
+            Cursor cursor = sd.rawQuery("Select id, title, description from questions where source_number = " + value, null);
             cursor.moveToFirst();
-            String title = cursor.getString(0);
-            String description = cursor.getString(1);
-            String solution = cursor.getString(2);
+            String id = cursor.getString(0);
+            String title = cursor.getString(1);
+            String description = cursor.getString(2);
+
+            cursor = sd.rawQuery("Select solutions.content From solutions Where Solutions.question_id = '" + id + "'", null);
+            cursor.moveToFirst();
+            String solution = cursor.getString(0);
+            cursor.close();
 
             toolbar.setTitle(title);
             setSupportActionBar(toolbar);
@@ -68,10 +75,17 @@ public class ProblemDescriptionActivity extends AppCompatActivity {
             problemDescription.getSettings().setUseWideViewPort(true);
             problemDescription.getSettings().setTextZoom(200);
 
-            problemSolution.loadData(URLEncoder.encode(solution, "utf-8").replaceAll("\\+", "%20"), "text/html; charset=utf-8", "utf-8");
+            problemSolution.loadDataWithBaseURL("data://", solution, "text/html", "utf-8", null);
             problemSolution.getSettings().setLoadWithOverviewMode(true);
             problemSolution.getSettings().setUseWideViewPort(true);
             problemSolution.getSettings().setTextZoom(300);
+            problemSolution.setWebChromeClient(new WebChromeClient());
+            problemSolution.setWebViewClient(new WebViewClient());
+            problemSolution.clearCache(true);
+            problemSolution.clearHistory();
+            problemSolution.getSettings().setJavaScriptEnabled(true);
+            problemSolution.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
+            problemSolution.getSettings().setDomStorageEnabled(true);
 
             sd.close();
         } catch (Exception e) {

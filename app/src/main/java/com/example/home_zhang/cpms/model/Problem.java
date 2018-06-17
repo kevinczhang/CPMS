@@ -5,6 +5,7 @@ package com.example.home_zhang.cpms.model;
  */
 
 public class Problem {
+    private String id;
     private String no;
     private String title;
     private String difficultyLevel;
@@ -13,10 +14,11 @@ public class Problem {
     private String companies;
     private String specialTags;
 
-    public Problem(String no, String title, String difficultyLevel) {
+    public Problem(String no, String title, String difficultyLevel, String topics) {
         this.no = no;
         this.title = title;
         this.difficultyLevel = difficultyLevel;
+        this.tags = topics;
     }
 
     public Problem(String no, String title, String difficultyLevel, String tags, String companies, String specialTags) {
