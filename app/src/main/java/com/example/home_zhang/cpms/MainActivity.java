@@ -132,7 +132,7 @@ public class MainActivity extends AppCompatActivity
                 String title = cursor.getString(2);
                 String level = cursor.getString(3);
                 String topics = cursor.getString(4);
-                this.data.add(new Problem(String.valueOf(number), title, level, topics));
+                this.data.add(new Problem(String.valueOf(number), title, level, topics, id));
             }
             Collections.sort(this.data, new Comparator<Problem>() {
                 @Override

@@ -28,7 +28,7 @@ public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.MyViewHold
 
     public static class MyViewHolder extends RecyclerView.ViewHolder {
 
-        TextView number, difficulty, title, tags;
+        TextView number, difficulty, title, tags, question_id;
         RelativeLayout expandable;
 
         public MyViewHolder(View itemView) {
@@ -38,6 +38,7 @@ public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.MyViewHold
             this.difficulty = (TextView) itemView.findViewById(R.id.difficulty);
             this.title = (TextView) itemView.findViewById(R.id.title);
             this.tags = (TextView) itemView.findViewById(R.id.tags);
+            this.question_id = (TextView) itemView.findViewById(R.id.question_id);
         }
     }
 
@@ -54,9 +55,9 @@ public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.MyViewHold
             @Override
             public void onClick(View v) {
                 Intent detailView = new Intent(v.getContext(), ProblemDescriptionActivity.class);
-                TextView tv = (TextView)v.findViewById(R.id.number);
+                TextView tv = (TextView)v.findViewById(R.id.question_id);
                 Bundle b = new Bundle();
-                b.putInt("prob_Id", Integer.parseInt(tv.getText().toString()));
+                b.putString("prob_Id", tv.getText().toString());
                 detailView.putExtras(b);
                 v.getContext().startActivity(detailView);
             }
@@ -71,11 +72,13 @@ public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.MyViewHold
         TextView difficultyView = holder.difficulty;
         TextView titleView = holder.title;
         TextView tagsView = holder.tags;
+        TextView questionIdView = holder.question_id;
 
         numberView.setText(dataSet.get(listPosition).getNo());
         difficultyView.setText(dataSet.get(listPosition).getDifficultyLevel());
         titleView.setText(dataSet.get(listPosition).getTitle());
         tagsView.setText(dataSet.get(listPosition).getTags());
+        questionIdView.setText(dataSet.get(listPosition).getId());
     }
 
     @Override

@@ -14,11 +14,12 @@ public class Problem {
     private String companies;
     private String specialTags;
 
-    public Problem(String no, String title, String difficultyLevel, String topics) {
+    public Problem(String no, String title, String difficultyLevel, String topics, String id) {
         this.no = no;
         this.title = title;
         this.difficultyLevel = difficultyLevel;
         this.tags = topics;
+        this.id = id;
     }
 
     public Problem(String no, String title, String difficultyLevel, String tags, String companies, String specialTags) {
@@ -100,5 +101,13 @@ public class Problem {
 
     public void setSpecialTags(String specialTags) {
         this.specialTags = specialTags;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 }

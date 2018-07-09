@@ -38,9 +38,9 @@ public class ProblemDescriptionActivity extends AppCompatActivity {
         setContentView(R.layout.activity_problem_description);
 
         Bundle b = getIntent().getExtras();
-        int value = -1;
+        String value = "";
         if(b != null){
-            value = b.getInt("prob_Id");
+            value = b.getString("prob_Id");
         }
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -51,7 +51,7 @@ public class ProblemDescriptionActivity extends AppCompatActivity {
             db.openDataBase();
 
             SQLiteDatabase sd = db.getReadableDatabase();
-            Cursor cursor = sd.rawQuery("Select id, title, description from questions where source_number = " + value, null);
+            Cursor cursor = sd.rawQuery("Select id, title, description from questions where id = '" + value + "'", null);
             cursor.moveToFirst();
             String id = cursor.getString(0);
             String title = cursor.getString(1);
