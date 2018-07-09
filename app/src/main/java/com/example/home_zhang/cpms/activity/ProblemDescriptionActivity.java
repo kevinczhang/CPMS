@@ -75,17 +75,10 @@ public class ProblemDescriptionActivity extends AppCompatActivity {
             problemDescription.getSettings().setUseWideViewPort(true);
             problemDescription.getSettings().setTextZoom(200);
 
-            problemSolution.loadDataWithBaseURL("data://", solution, "text/html", "utf-8", null);
+            problemSolution.loadData(URLEncoder.encode(solution, "utf-8").replaceAll("\\+", "%20"), "text/html; charset=utf-8", "utf-8");
             problemSolution.getSettings().setLoadWithOverviewMode(true);
             problemSolution.getSettings().setUseWideViewPort(true);
             problemSolution.getSettings().setTextZoom(300);
-            problemSolution.setWebChromeClient(new WebChromeClient());
-            problemSolution.setWebViewClient(new WebViewClient());
-            problemSolution.clearCache(true);
-            problemSolution.clearHistory();
-            problemSolution.getSettings().setJavaScriptEnabled(true);
-            problemSolution.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
-            problemSolution.getSettings().setDomStorageEnabled(true);
 
             sd.close();
         } catch (Exception e) {
