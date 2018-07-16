@@ -7,6 +7,7 @@ import android.graphics.Camera;
 import android.graphics.Matrix;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
@@ -28,6 +29,7 @@ import com.example.home_zhang.cpms.DAL.DatabaseHelper;
 import com.example.home_zhang.cpms.MainActivity;
 import com.example.home_zhang.cpms.R;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
 public class ProblemDescriptionActivity extends AppCompatActivity {
@@ -44,32 +46,22 @@ public class ProblemDescriptionActivity extends AppCompatActivity {
         }
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        String[] queryResult = getViewContent(value);
 
-        DatabaseHelper db = new DatabaseHelper(this);
+        // Set title, description and solution to view
+        String title = queryResult[0];
+        String description = queryResult[1];
+        String solution = queryResult[2];
+
+        toolbar.setTitle(title);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+
+        WebView problemDescription = (WebView) findViewById(R.id.problemDescription);
+        WebView problemSolution = (WebView) findViewById(R.id.problemSolution);
+
         try {
-            db.createDataBase();
-            db.openDataBase();
-
-            SQLiteDatabase sd = db.getReadableDatabase();
-            Cursor cursor = sd.rawQuery("Select id, title, description from questions where id = '" + value + "'", null);
-            cursor.moveToFirst();
-            String id = cursor.getString(0);
-            String title = cursor.getString(1);
-            String description = cursor.getString(2);
-
-            cursor = sd.rawQuery("Select solutions.content From solutions Where Solutions.question_id = '" + id + "'", null);
-            cursor.moveToFirst();
-            String solution = cursor.getString(0);
-            cursor.close();
-
-            toolbar.setTitle(title);
-            setSupportActionBar(toolbar);
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setDisplayShowHomeEnabled(true);
-
-            WebView problemDescription = (WebView) findViewById(R.id.problemDescription);
-            WebView problemSolution = (WebView) findViewById(R.id.problemSolution);
-
             problemDescription.loadData(URLEncoder.encode(description, "utf-8").replaceAll("\\+", "%20"), "text/html; charset=utf-8", "utf-8");
             problemDescription.getSettings().setLoadWithOverviewMode(true);
             problemDescription.getSettings().setUseWideViewPort(true);
@@ -79,12 +71,8 @@ public class ProblemDescriptionActivity extends AppCompatActivity {
             problemSolution.getSettings().setLoadWithOverviewMode(true);
             problemSolution.getSettings().setUseWideViewPort(true);
             problemSolution.getSettings().setTextZoom(300);
-
-            sd.close();
-        } catch (Exception e) {
+        } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
-        } finally {
-            db.close();
         }
 
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
@@ -95,6 +83,36 @@ public class ProblemDescriptionActivity extends AppCompatActivity {
                 finish();
             }
         });
+    }
+
+    @NonNull
+    private String[] getViewContent(String value) {
+        String[] queryResult = new String[3];
+
+        // Get title, description and solution from database
+        DatabaseHelper db = new DatabaseHelper(this);
+        try {
+            db.createDataBase();
+            db.openDataBase();
+
+            SQLiteDatabase sd = db.getReadableDatabase();
+            Cursor cursor = sd.rawQuery("Select id, title, description from questions where id = '" + value + "'", null);
+            cursor.moveToFirst();
+            String id = cursor.getString(0);
+            queryResult[0] = cursor.getString(1);
+            queryResult[1] = cursor.getString(2);
+
+            cursor = sd.rawQuery("Select solutions.content From solutions Where Solutions.question_id = '" + id + "'", null);
+            cursor.moveToFirst();
+            queryResult[2] = cursor.getString(0);
+            cursor.close();
+            sd.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            db.close();
+        }
+        return queryResult;
     }
 
     @Override

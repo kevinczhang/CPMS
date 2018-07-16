@@ -23,6 +23,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.example.home_zhang.cpms.DAL.DatabaseHelper;
+import com.example.home_zhang.cpms.activity.LoginActivity;
 import com.example.home_zhang.cpms.adapter.CustomAdapter;
 import com.example.home_zhang.cpms.model.Problem;
 
@@ -74,6 +75,11 @@ public class MainActivity extends AppCompatActivity
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
 
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.clear();
+        editor.commit();
+
         fillProblemList(recyclerView);
 
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -106,13 +112,16 @@ public class MainActivity extends AppCompatActivity
     protected void onStart() {
         super.onStart();
 
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         String exampleText = prefs.getString("example_list", "");
 
         Set<String> exampleTexts = prefs.getStringSet("show_levels", new HashSet<String>());
 
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        String authToken = sharedPreferences.getString("authToken", "");
+
         SearchView searchView = (SearchView) findViewById(R.id.searchProblemView);
-        searchView.setQueryHint(exampleTexts.toString());
+        searchView.setQueryHint(authToken);
     }
 
     private void fillProblemList(RecyclerView recyclerView) {
@@ -238,8 +247,9 @@ public class MainActivity extends AppCompatActivity
             }
             RecyclerView.Adapter adapter = new CustomAdapter(filteredList);
             recyclerView.setAdapter(adapter);
-        } else if (id == R.id.nav_favorite) {
-
+        } else if (id == R.id.nav_account) {
+            Intent intent = new Intent(this, LoginActivity.class);
+            startActivity(intent);
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
