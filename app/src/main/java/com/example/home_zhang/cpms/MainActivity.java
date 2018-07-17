@@ -26,6 +26,12 @@ import com.example.home_zhang.cpms.DAL.DatabaseHelper;
 import com.example.home_zhang.cpms.activity.LoginActivity;
 import com.example.home_zhang.cpms.adapter.CustomAdapter;
 import com.example.home_zhang.cpms.model.Problem;
+import com.example.home_zhang.cpms.services.QuestionService;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -125,6 +131,12 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void fillProblemList(RecyclerView recyclerView) {
+        setViewWithService(recyclerView);
+
+        setViewWithSqlite(recyclerView);
+    }
+
+    private void setViewWithSqlite(RecyclerView recyclerView) {
         DatabaseHelper db = new DatabaseHelper(this);
         try {
             db.createDataBase();
@@ -156,6 +168,44 @@ public class MainActivity extends AppCompatActivity
             e.printStackTrace();
         } finally {
             db.close();
+        }
+    }
+
+    private void setViewWithService(RecyclerView recyclerView) {
+        QuestionService service = new QuestionService();
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        String authToken = sharedPreferences.getString("authToken", "");
+        String questions = service.getQuestion(authToken);
+
+        JSONParser parser = new JSONParser();
+        try {
+            JSONArray problems = (JSONArray) parser.parse(questions);
+            for (Object o : problems) {
+                JSONObject problem = (JSONObject) o;
+
+                String id = (String)problem.get("id");
+                long number = (Long) problem.get("number");
+                String title = (String) problem.get("title");
+                String level = (String) problem.get("level");
+                String topics = "";
+                JSONArray all_topics = (JSONArray) problem.get("topics");
+                for (Object t : all_topics) {
+                    topics = "," + t;
+                }
+                this.data.add(new Problem(String.valueOf(number), title, level, topics, id));
+            }
+
+            // Sort data
+            Collections.sort(this.data, new Comparator<Problem>() {
+                @Override
+                public int compare(Problem p1, Problem p2) {
+                    return Integer.parseInt(p1.getNo()) - Integer.parseInt(p2.getNo());
+                }
+            });
+            RecyclerView.Adapter adapter = new CustomAdapter(this.data);
+            recyclerView.setAdapter(adapter);
+        } catch (ParseException e) {
+            e.printStackTrace();
         }
     }
 
