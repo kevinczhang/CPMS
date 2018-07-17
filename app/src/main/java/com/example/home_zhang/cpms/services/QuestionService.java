@@ -115,4 +115,49 @@ public class QuestionService {
         }
         return response;
     }
+
+    public String getQuestionById(String authToken, String question_Id) {
+        String response = "";
+        try {
+            JSONParser parser = new JSONParser();
+            JSONObject responsJSON = (JSONObject) parser.parse(authToken);
+            String accessToken = (String) responsJSON.get("accessToken");
+            String tokenType = (String) responsJSON.get("tokenType");
+            System.out.println(accessToken);
+            System.out.println(tokenType);
+
+            URL url = new URL(baseURL + "/api/question/" + question_Id);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("Authorization", tokenType + " " + accessToken);
+            conn.setRequestProperty("Accept", "application/json");
+
+            if (conn.getResponseCode() != 200) {
+                throw new RuntimeException("Failed : HTTP error code : " + conn.getResponseCode());
+            }
+
+            BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+
+            String output;
+            System.out.println("Output from Server .... \n");
+            while ((output = br.readLine()) != null) {
+                response = output;
+                System.out.println(output);
+            }
+
+            conn.disconnect();
+
+        } catch (MalformedURLException e) {
+
+            e.printStackTrace();
+
+        } catch (IOException e) {
+
+            e.printStackTrace();
+
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return response;
+    }
 }

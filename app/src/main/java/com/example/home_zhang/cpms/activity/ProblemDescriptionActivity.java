@@ -1,14 +1,17 @@
 package com.example.home_zhang.cpms.activity;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Camera;
 import android.graphics.Matrix;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.text.SpannableString;
@@ -28,9 +31,19 @@ import android.widget.TextView;
 import com.example.home_zhang.cpms.DAL.DatabaseHelper;
 import com.example.home_zhang.cpms.MainActivity;
 import com.example.home_zhang.cpms.R;
+import com.example.home_zhang.cpms.adapter.CustomAdapter;
+import com.example.home_zhang.cpms.model.Problem;
+import com.example.home_zhang.cpms.services.QuestionService;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.Collections;
+import java.util.Comparator;
 
 public class ProblemDescriptionActivity extends AppCompatActivity {
 
@@ -89,29 +102,29 @@ public class ProblemDescriptionActivity extends AppCompatActivity {
     private String[] getViewContent(String value) {
         String[] queryResult = new String[3];
 
-        // Get title, description and solution from database
-        DatabaseHelper db = new DatabaseHelper(this);
+        // Get title, description and solution from service
+        QuestionService service = new QuestionService();
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        String authToken = sharedPreferences.getString("authToken", "");
+        String respnose = service.getQuestionById(authToken, value);
+
+        JSONParser parser = new JSONParser();
         try {
-            db.createDataBase();
-            db.openDataBase();
+            JSONObject respnoseJSON = (JSONObject) parser.parse(respnose);
+            JSONObject question = (JSONObject) respnoseJSON.get("payload");
+            JSONArray solutions = (JSONArray) question.get("solutions");
 
-            SQLiteDatabase sd = db.getReadableDatabase();
-            Cursor cursor = sd.rawQuery("Select id, title, description from questions where id = '" + value + "'", null);
-            cursor.moveToFirst();
-            String id = cursor.getString(0);
-            queryResult[0] = cursor.getString(1);
-            queryResult[1] = cursor.getString(2);
+            queryResult[0] = (String) question.get("title");
+            queryResult[1] = (String) question.get("description");
 
-            cursor = sd.rawQuery("Select solutions.content From solutions Where Solutions.question_id = '" + id + "'", null);
-            cursor.moveToFirst();
-            queryResult[2] = cursor.getString(0);
-            cursor.close();
-            sd.close();
-        } catch (Exception e) {
+            for (Object o : solutions) {
+                JSONObject solution = (JSONObject) o;
+                queryResult[2] = (String)solution.get("html_content");
+            }
+        } catch (ParseException e) {
             e.printStackTrace();
-        } finally {
-            db.close();
         }
+
         return queryResult;
     }
 

@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -86,7 +87,8 @@ public class MainActivity extends AppCompatActivity
         editor.clear();
         editor.commit();
 
-        fillProblemList(recyclerView);
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(policy);
 
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -119,67 +121,36 @@ public class MainActivity extends AppCompatActivity
         super.onStart();
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        String exampleText = prefs.getString("example_list", "");
-
         Set<String> exampleTexts = prefs.getStringSet("show_levels", new HashSet<String>());
+        String authToken = prefs.getString("authToken", "");
 
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        String authToken = sharedPreferences.getString("authToken", "");
+        if(authToken.length() == 0){
+            Intent intent = new Intent(this, LoginActivity.class);
+            startActivity(intent);
+        } else if (recyclerView != null && recyclerView.getAdapter() == null){
+            fillProblemList(recyclerView);
+        }
 
         SearchView searchView = (SearchView) findViewById(R.id.searchProblemView);
-        searchView.setQueryHint(authToken);
+        searchView.setQueryHint(exampleTexts.toString());
     }
 
     private void fillProblemList(RecyclerView recyclerView) {
         setViewWithService(recyclerView);
-
-        setViewWithSqlite(recyclerView);
     }
 
-    private void setViewWithSqlite(RecyclerView recyclerView) {
-        DatabaseHelper db = new DatabaseHelper(this);
-        try {
-            db.createDataBase();
-            db.openDataBase();
-
-            SQLiteDatabase sd = db.getReadableDatabase();
-            Cursor cursor = sd.query("questions",
-                    new String[]{"id", "source_number", "title", "level", "topics"},
-                    null, null, null, null, null, null);
-
-            while (cursor.moveToNext()) {
-                String id = cursor.getString(0);
-                int number = cursor.getInt(1);
-                String title = cursor.getString(2);
-                String level = cursor.getString(3);
-                String topics = cursor.getString(4);
-                this.data.add(new Problem(String.valueOf(number), title, level, topics, id));
-            }
-            Collections.sort(this.data, new Comparator<Problem>() {
-                @Override
-                public int compare(Problem p1, Problem p2) {
-                    return Integer.parseInt(p1.getNo()) - Integer.parseInt(p2.getNo());
-                }
-            });
-            RecyclerView.Adapter adapter = new CustomAdapter(this.data);
-            recyclerView.setAdapter(adapter);
-            sd.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            db.close();
-        }
-    }
-
+    // Get questions list
     private void setViewWithService(RecyclerView recyclerView) {
         QuestionService service = new QuestionService();
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         String authToken = sharedPreferences.getString("authToken", "");
-        String questions = service.getQuestion(authToken);
+        String respnose = service.getQuestion(authToken);
 
         JSONParser parser = new JSONParser();
         try {
-            JSONArray problems = (JSONArray) parser.parse(questions);
+            JSONObject respnoseJSON = (JSONObject) parser.parse(respnose);
+
+            JSONArray problems = (JSONArray) respnoseJSON.get("payload");
             for (Object o : problems) {
                 JSONObject problem = (JSONObject) o;
 
@@ -190,7 +161,10 @@ public class MainActivity extends AppCompatActivity
                 String topics = "";
                 JSONArray all_topics = (JSONArray) problem.get("topics");
                 for (Object t : all_topics) {
-                    topics = "," + t;
+                    topics = ", " + t;
+                }
+                if(topics.length() > 0){
+                    topics = topics.substring(2);
                 }
                 this.data.add(new Problem(String.valueOf(number), title, level, topics, id));
             }
