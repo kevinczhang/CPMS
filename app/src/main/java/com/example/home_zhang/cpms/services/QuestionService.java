@@ -81,7 +81,7 @@ public class QuestionService {
             System.out.println(accessToken);
             System.out.println(tokenType);
 
-            URL url = new URL(baseURL + "/api/question/admin");
+            URL url = new URL(baseURL + "/api/question/");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
             conn.setRequestProperty("Authorization", tokenType + " " + accessToken);

@@ -149,8 +149,8 @@ public class MainActivity extends AppCompatActivity
         JSONParser parser = new JSONParser();
         try {
             JSONObject respnoseJSON = (JSONObject) parser.parse(respnose);
-
-            JSONArray problems = (JSONArray) respnoseJSON.get("payload");
+            JSONObject payload = (JSONObject) respnoseJSON.get("payload");
+            JSONArray problems = (JSONArray) payload.get("adminQuestions");
             for (Object o : problems) {
                 JSONObject problem = (JSONObject) o;
 
