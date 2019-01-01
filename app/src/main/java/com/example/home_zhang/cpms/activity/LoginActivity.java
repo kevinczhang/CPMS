@@ -316,7 +316,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         protected Boolean doInBackground(Void... params) {
 
             QuestionService service = new QuestionService();
-            String authToken = service.getAuthToken();
+            String authToken = service.getAuthToken(this.mEmail, this.mPassword);
             if(authToken == null || authToken.length() == 0){
                 return false;
             }

@@ -24,7 +24,7 @@ public class QuestionService {
 
     }
 
-    public String getAuthToken(){
+    public String getAuthToken(String email, String password){
         String response = "";
         try {
 
@@ -34,7 +34,7 @@ public class QuestionService {
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/json");
 
-            String input = "{\"password\": \"jwtpass\",\"usernameOrEmail\":\"admin@admin\"}";
+            String input = "{\"password\": \"" + password + "\",\"usernameOrEmail\":\"" + email + "\"}";
 
             OutputStream os = conn.getOutputStream();
             os.write(input.getBytes());
